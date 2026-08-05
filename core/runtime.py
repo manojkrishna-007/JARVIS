@@ -1,8 +1,8 @@
 from core.config import JarvisConfig
 from core.logger import create_logger
-
 from tools.registry import ToolRegistry
 from tools.system_tool import SystemTool
+from tools.app_tool import AppTool
 
 
 class JarvisRuntime:
@@ -16,6 +16,7 @@ class JarvisRuntime:
 
         self.tools = ToolRegistry()
         self.tools.register(SystemTool())
+        self.tools.register(AppTool())
 
     def start(self):
         """Start JARVIS."""
@@ -81,6 +82,16 @@ class JarvisRuntime:
                 lines.append(f"  {tool.name} - {tool.description}")
 
             return "\n".join(lines)
+
+        if command_lower.startswith("open "):
+            application = command[5:].strip()
+
+            result = self.tools.execute(
+                "app",
+                application=application,
+            )
+
+            return result.message
 
         if command_lower in {"status", "system status"}:
             result = self.tools.execute("system")
