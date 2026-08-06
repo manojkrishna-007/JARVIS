@@ -171,13 +171,69 @@ class JarvisRuntime:
             return "\n".join(lines)
 
 
-        if command_lower.startswith("is ") and command_lower.endswith(" running"):
-            process_name = command[3:-8].strip()
+        if command_lower.startswith("is ") and " running" in command_lower:
+            process_name = command_lower[3:]
 
+            process_name = process_name.replace(
+                " currently running",
+                "",
+            )
+
+            process_name = process_name.replace(
+                " running",
+                "",
+            )
+
+            process_name = process_name.rstrip("?.! ")
+
+            if process_name:
+                result = self.tools.execute(
+                    "processes",
+                    action="check",
+                    process_name=process_name,
+                )
+
+                return result.message
+
+        if command_lower in {
+            "system usage",
+            "system status",
+            "how much ram am i using",
+            "how much memory am i using",
+            "how is my computer doing",
+            "computer status",
+        }:
             result = self.tools.execute(
                 "processes",
-                action="check",
-                process_name=process_name,
+                action="system_usage",
+            )
+
+            return result.message
+
+
+        if command_lower in {
+            "what is using the most cpu",
+            "what is using most cpu",
+            "top cpu",
+            "highest cpu usage",
+        }:
+            result = self.tools.execute(
+                "processes",
+                action="top_cpu",
+            )
+
+            return result.message
+
+
+        if command_lower in {
+            "what is using the most memory",
+            "what is using most memory",
+            "top memory",
+            "highest memory usage",
+        }:
+            result = self.tools.execute(
+                "processes",
+                action="top_memory",
             )
 
             return result.message
