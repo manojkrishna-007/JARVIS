@@ -3,6 +3,7 @@ from core.logger import create_logger
 from tools.registry import ToolRegistry
 from tools.system_tool import SystemTool
 from tools.app_tool import AppTool
+from tools.file_tool import FileTool
 
 
 class JarvisRuntime:
@@ -17,6 +18,7 @@ class JarvisRuntime:
         self.tools = ToolRegistry()
         self.tools.register(SystemTool())
         self.tools.register(AppTool())
+        self.tools.register(FileTool())
 
     def start(self):
         """Start JARVIS."""
@@ -82,7 +84,63 @@ class JarvisRuntime:
                 lines.append(f"  {tool.name} - {tool.description}")
 
             return "\n".join(lines)
+        
+        if command_lower.startswith("create folder "):
+            folder_path = command[len("create folder "):].strip()
 
+            result = self.tools.execute(
+                "files",
+                action="create_folder",
+                path=folder_path,
+            )
+
+            return result.message
+
+        if command_lower.startswith("create file "):
+            file_path = command[len("create file "):].strip()
+
+            result = self.tools.execute(
+                "files",
+                action="create_file",
+                path=file_path,
+                content="",
+            )
+
+            return result.message
+
+        if command_lower.startswith("read file "):
+            file_path = command[len("read file "):].strip()
+
+            result = self.tools.execute(
+                "files",
+                action="read_file",
+                path=file_path,
+            )
+
+            return result.message
+
+        if command_lower.startswith("check file "):
+            file_path = command[len("check file "):].strip()
+
+            result = self.tools.execute(
+                "files",
+                action="exists",
+                path=file_path,
+            )
+
+            return result.message
+
+        if command_lower.startswith("open folder "):
+            folder_path = command[len("open folder "):].strip()
+
+            result = self.tools.execute(
+                "files",
+                action="open",
+                path=folder_path,
+            )
+
+            return result.message
+        
         if command_lower.startswith("open "):
             application = command[5:].strip()
 
