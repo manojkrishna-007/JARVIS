@@ -4,6 +4,7 @@ from tools.registry import ToolRegistry
 from tools.system_tool import SystemTool
 from tools.app_tool import AppTool
 from tools.file_tool import FileTool
+from tools.process_tool import ProcessTool
 
 
 class JarvisRuntime:
@@ -19,6 +20,7 @@ class JarvisRuntime:
         self.tools.register(SystemTool())
         self.tools.register(AppTool())
         self.tools.register(FileTool())
+        self.tools.register(ProcessTool())
 
     def start(self):
         """Start JARVIS."""
@@ -137,6 +139,45 @@ class JarvisRuntime:
                 "files",
                 action="open",
                 path=folder_path,
+            )
+
+            return result.message
+        
+        if command_lower in {
+            "what applications are running",
+            "what apps are running",
+            "list processes",
+            "show processes",
+        }:
+            result = self.tools.execute(
+                "processes",
+                action="list",
+            )
+
+            if not result.success:
+                return result.message
+
+            processes = result.data
+
+            lines = [
+                f"Currently running processes: {len(processes)}"
+            ]
+
+            for process in processes:
+                lines.append(
+                    f"  PID {process['pid']} - {process['name']}"
+                )
+
+            return "\n".join(lines)
+
+
+        if command_lower.startswith("is ") and command_lower.endswith(" running"):
+            process_name = command[3:-8].strip()
+
+            result = self.tools.execute(
+                "processes",
+                action="check",
+                process_name=process_name,
             )
 
             return result.message
