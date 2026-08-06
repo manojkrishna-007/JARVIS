@@ -5,6 +5,8 @@ from tools.system_tool import SystemTool
 from tools.app_tool import AppTool
 from tools.file_tool import FileTool
 from tools.process_tool import ProcessTool
+from tools.input_tool import InputTool
+from tools.window_tool import WindowTool
 
 
 class JarvisRuntime:
@@ -21,6 +23,8 @@ class JarvisRuntime:
         self.tools.register(AppTool())
         self.tools.register(FileTool())
         self.tools.register(ProcessTool())
+        self.tools.register(InputTool())
+        self.tools.register(WindowTool())
 
     def start(self):
         """Start JARVIS."""
@@ -238,6 +242,83 @@ class JarvisRuntime:
 
             return result.message
         
+        if command_lower == "move mouse":
+            result = self.tools.execute(
+                "input",
+                action="move",
+                x=500,
+                y=300,
+            )
+
+            return result.message
+        
+        if command_lower == "click test":
+            result = self.tools.execute(
+                "input",
+                action="click",
+                x=176,
+                y=270,
+            )
+
+            return result.message
+        
+        if command_lower == "type test":
+            result = self.tools.execute(
+                "input",
+                action="type",
+                text="Hello from JARVIS!",
+            )
+
+            return result.message
+
+        if command_lower.startswith("find window "):
+            window_title = command[12:].strip()
+
+            result = self.tools.execute(
+                "windows",
+                action="find",
+                title=window_title,
+            )
+
+            return result.message
+
+
+        if command_lower.startswith("focus window "):
+            window_title = command[13:].strip()
+
+            result = self.tools.execute(
+                "windows",
+                action="focus",
+                title=window_title,
+            )
+
+            return result.message
+        
+        if command_lower.startswith("type ") and " in notepad" in command_lower:
+            text = command[5:]
+
+            text = text[:text.lower().rfind(" in notepad")]
+
+            if not text.strip():
+                return "Please tell me what you want me to type."
+
+            focus_result = self.tools.execute(
+                "windows",
+                action="focus",
+                title="notepad",
+            )
+
+            if not focus_result.success:
+                return focus_result.message
+
+            type_result = self.tools.execute(
+                "input",
+                action="type",
+                text=text,
+            )
+
+            return type_result.message
+
         if command_lower.startswith("open "):
             application = command[5:].strip()
 
