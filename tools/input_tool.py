@@ -10,15 +10,16 @@ class InputTool(JarvisTool):
     description = "Controls the mouse and keyboard."
 
     def execute(
-        self,
-        action: str = "",
-        x: int | None = None,
-        y: int | None = None,
-        text: str = "",
-        key: str = "",
-        keys: list[str] | None = None,
-        **kwargs,
-    ) -> ToolResult:
+    self,
+    action: str = "",
+    x: int | None = None,
+    y: int | None = None,
+    text: str = "",
+    key: str = "",
+    keys: list[str] | None = None,
+    window=None,
+    **kwargs,
+) -> ToolResult:
         """Execute a mouse or keyboard action."""
 
         action = action.strip().lower()
@@ -26,6 +27,9 @@ class InputTool(JarvisTool):
         try:
             if action == "move":
                 return self._move_mouse(x, y)
+
+            if action == "move_relative":
+                return self._move_mouse_relative(x, y, window,)
 
             if action == "click":
                 return self._click_mouse(x, y)
@@ -171,3 +175,50 @@ class InputTool(JarvisTool):
             success=True,
             message=f"Pressed {' + '.join(keys)}.",
         )
+        
+    def _move_mouse_relative(
+        self,
+        x,
+        y,
+        window,
+    ) -> ToolResult:
+        """Move the mouse relative to a target window."""
+
+        if x is None or y is None:
+            return ToolResult(
+                success=False,
+                message="Relative mouse movement requires X and Y coordinates.",
+            )
+
+        if window is None:
+            return ToolResult(
+                success=False,
+                message="No target window was provided.",
+            )
+
+        try:
+            window_x = window.left
+            window_y = window.top
+
+            target_x = window_x + x
+            target_y = window_y + y
+
+            pyautogui.moveTo(
+                target_x,
+                target_y,
+                duration=0.2,
+            )
+
+            return ToolResult(
+                success=True,
+                message=(
+                    f"Mouse moved to "
+                    f"({x}, {y}) relative to the target window."
+                ),
+            )
+
+        except Exception as exc:
+            return ToolResult(
+                success=False,
+                message=f"Relative mouse movement failed: {exc}",
+            )

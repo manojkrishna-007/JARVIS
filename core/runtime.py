@@ -274,6 +274,17 @@ class JarvisRuntime:
             if not window_title:
                 return "Please specify the target window."
 
+            window_result = self.tools.execute(
+                "windows",
+                action="get",
+                title=window_title,
+            )
+
+            if not window_result.success:
+                return window_result.message
+
+            window = window_result.data
+
             focus_result = self.tools.execute(
                 "windows",
                 action="focus",
@@ -285,9 +296,10 @@ class JarvisRuntime:
 
             move_result = self.tools.execute(
                 "input",
-                action="move",
+                action="move_relative",
                 x=x,
                 y=y,
+                window=window,
             )
 
             return move_result.message

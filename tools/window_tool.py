@@ -25,6 +25,9 @@ class WindowTool(JarvisTool):
 
         if action == "find":
             return self._find_window(title)
+        
+        if action == "get":
+            return self._get_window(title)
 
         if action == "focus":
             return self._focus_window(title)
@@ -99,6 +102,34 @@ class WindowTool(JarvisTool):
             data=titles,
         )
 
+    def _get_window(self, title: str) -> ToolResult:
+        """Return the first matching window object."""
+
+        if not title:
+            return ToolResult(
+                success=False,
+                message="No window title was specified.",
+            )
+
+        for window in gw.getAllWindows():
+            try:
+                window_title = window.title.strip()
+
+                if title.lower() in window_title.lower():
+                    return ToolResult(
+                        success=True,
+                        message=f"Found window: {window_title}",
+                        data=window,
+                    )
+
+            except Exception:
+                continue
+
+        return ToolResult(
+            success=False,
+            message=f"No window found matching '{title}'.",
+        ) 
+    
     def _focus_window(self, title: str) -> ToolResult:
         """Bring a matching window to the foreground."""
 
