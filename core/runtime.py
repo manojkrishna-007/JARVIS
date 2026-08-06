@@ -318,6 +318,70 @@ class JarvisRuntime:
             )
 
             return type_result.message
+        
+        if command_lower.startswith("press ") and " in " in command_lower:
+            key_part, window_part = command[6:].rsplit(" in ", 1)
+
+            key = key_part.strip()
+            window_title = window_part.strip()
+
+            if not key:
+                return "Please specify a key to press."
+
+            if not window_title:
+                return "Please specify the target window."
+
+            focus_result = self.tools.execute(
+                "windows",
+                action="focus",
+                title=window_title,
+            )
+
+            if not focus_result.success:
+                return focus_result.message
+
+            press_result = self.tools.execute(
+                "input",
+                action="press",
+                key=key,
+            )
+
+            return press_result.message
+        
+        if command_lower.startswith("hotkey ") and " in " in command_lower:
+            shortcut_part, window_part = command[7:].rsplit(" in ", 1)
+
+            shortcut = shortcut_part.strip()
+            window_title = window_part.strip()
+
+            if not shortcut:
+                return "Please specify a keyboard shortcut."
+
+            if not window_title:
+                return "Please specify the target window."
+
+            keys = [
+                key.strip()
+                for key in shortcut.split("+")
+                if key.strip()
+            ]
+
+            focus_result = self.tools.execute(
+                "windows",
+                action="focus",
+                title=window_title,
+            )
+
+            if not focus_result.success:
+                return focus_result.message
+
+            hotkey_result = self.tools.execute(
+                "input",
+                action="hotkey",
+                keys=keys,
+            )
+
+            return hotkey_result.message
 
         if command_lower.startswith("open "):
             application = command[5:].strip()
