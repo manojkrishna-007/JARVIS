@@ -252,6 +252,70 @@ class JarvisRuntime:
 
             return result.message
         
+        if (
+    command_lower.startswith("move mouse to ")
+    and " in " in command_lower
+):
+            coordinates, window_title = command[14:].rsplit(" in ", 1)
+
+            parts = coordinates.strip().split()
+
+            if len(parts) != 2:
+                return "Please provide X and Y coordinates."
+
+            try:
+                x = int(parts[0])
+                y = int(parts[1])
+            except ValueError:
+                return "X and Y coordinates must be numbers."
+
+            window_title = window_title.strip()
+
+            if not window_title:
+                return "Please specify the target window."
+
+            focus_result = self.tools.execute(
+                "windows",
+                action="focus",
+                title=window_title,
+            )
+
+            if not focus_result.success:
+                return focus_result.message
+
+            move_result = self.tools.execute(
+                "input",
+                action="move",
+                x=x,
+                y=y,
+            )
+
+            return move_result.message
+
+
+        if command_lower.startswith("move mouse to "):
+            coordinates = command[14:].strip()
+
+            parts = coordinates.split()
+
+            if len(parts) != 2:
+                return "Please provide X and Y coordinates."
+
+            try:
+                x = int(parts[0])
+                y = int(parts[1])
+            except ValueError:
+                return "X and Y coordinates must be numbers."
+
+            result = self.tools.execute(
+                "input",
+                action="move",
+                x=x,
+                y=y,
+            )
+
+            return result.message
+        
         if command_lower == "click test":
             result = self.tools.execute(
                 "input",
