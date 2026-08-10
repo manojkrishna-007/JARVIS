@@ -9,6 +9,7 @@ from tools.file_tool import FileTool
 from tools.process_tool import ProcessTool
 from tools.input_tool import InputTool
 from tools.window_tool import WindowTool
+from tools.screen_tool import ScreenTool
 
 
 class JarvisRuntime:
@@ -27,6 +28,7 @@ class JarvisRuntime:
         self.tools.register(ProcessTool())
         self.tools.register(InputTool())
         self.tools.register(WindowTool())
+        self.tools.register(ScreenTool())
         
         self.automation = AutomationEngine(self.tools)
 
@@ -117,6 +119,27 @@ class JarvisRuntime:
                 lines.append(f"  {tool.name} - {tool.description}")
 
             return "\n".join(lines)
+        
+        if command_lower in {"screenshot", "take screenshot", "capture screen"}:
+            result = self.tools.execute(
+                "screen",
+                action="screenshot",
+            )
+
+            return result.message
+        
+        if command_lower in {
+            "read screen",
+            "read the screen",
+            "what is on my screen",
+            "what's on my screen",
+        }:
+            result = self.tools.execute(
+                "screen",
+                action="read",
+            )
+
+            return result.message
         
         if command_lower.startswith("create folder "):
             folder_path = command[len("create folder "):].strip()
