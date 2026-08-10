@@ -134,7 +134,7 @@ class InputTool(JarvisTool):
                 message="No text was provided.",
             )
 
-        pyautogui.write(text, interval=0.01)
+        pyautogui.write(text, interval=0.03)
 
         return ToolResult(
             success=True,

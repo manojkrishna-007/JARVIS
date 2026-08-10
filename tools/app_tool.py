@@ -1,6 +1,4 @@
-import os
 import subprocess
-from pathlib import Path
 
 from tools.base import JarvisTool, ToolResult
 
@@ -11,7 +9,6 @@ class AppTool(JarvisTool):
     name = "app"
     description = "Launches applications installed on the computer."
 
-    # We will expand this list as we build JARVIS.
     APPLICATIONS = {
         "notepad": "notepad.exe",
         "calculator": "calc.exe",
@@ -21,7 +18,7 @@ class AppTool(JarvisTool):
     }
 
     def execute(self, application: str = "", **kwargs) -> ToolResult:
-        """Launch an approved application."""
+        """Launch an approved application and return its PID."""
 
         application = application.strip().lower()
 
@@ -43,7 +40,7 @@ class AppTool(JarvisTool):
             )
 
         try:
-            subprocess.Popen(
+            process = subprocess.Popen(
                 executable,
                 shell=False,
                 stdout=subprocess.DEVNULL,
@@ -53,6 +50,11 @@ class AppTool(JarvisTool):
             return ToolResult(
                 success=True,
                 message=f"Opening {application}.",
+                data={
+                    "application": application,
+                    "executable": executable,
+                    "pid": process.pid,
+                },
             )
 
         except FileNotFoundError:

@@ -1,5 +1,7 @@
 from core.config import JarvisConfig
 from core.logger import create_logger
+from core.automation import AutomationAction, AutomationEngine
+
 from tools.registry import ToolRegistry
 from tools.system_tool import SystemTool
 from tools.app_tool import AppTool
@@ -25,6 +27,8 @@ class JarvisRuntime:
         self.tools.register(ProcessTool())
         self.tools.register(InputTool())
         self.tools.register(WindowTool())
+        
+        self.automation = AutomationEngine(self.tools)
 
     def start(self):
         """Start JARVIS."""
@@ -55,7 +59,30 @@ class JarvisRuntime:
             return "I didn't receive a command."
 
         command_lower = command.lower()
+        
+        if command_lower == "automation test":
+            launch_result = self.automation.launch_and_focus(
+                application="notepad",
+                window_title="Notepad",
+            )
 
+            if not launch_result.success:
+                return launch_result.message
+
+            type_result = self.automation.type_text(
+                "Hello from JARVIS Automation Engine!"
+            )
+
+            if not type_result.success:
+                return type_result.message
+
+            window_title = launch_result.data["window_title"]
+
+            return (
+                "Automation completed successfully. "
+                f"Controlled window: {window_title}"
+            )
+    
         if command_lower in {"hello", "hello jarvis", "hi"}:
             return "Hello. JARVIS is online and ready."
 
