@@ -76,6 +76,21 @@ class JarvisRuntime:
 
             return result.message
         
+        if command_lower.startswith("wait for "):
+            target = command[9:].strip()
+
+            if not target:
+                return "Please tell me what I should wait for."
+
+            result = self.tools.execute(
+                "screen",
+                action="wait_for",
+                target=target,
+                timeout=10,
+            )
+
+            return result.message
+                
         if command_lower.startswith("click "):
             target = command[6:].strip()
 

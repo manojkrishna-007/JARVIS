@@ -1,5 +1,6 @@
 from pathlib import Path
 from datetime import datetime
+import time
 
 from PIL import ImageGrab
 import pytesseract
@@ -35,6 +36,11 @@ class ScreenTool(JarvisTool):
         if action == "locate":
             target = kwargs.get("target", "")
             return self._locate_text(target)
+        
+        if action == "wait_for":
+            target = kwargs.get("target", "")
+            timeout = kwargs.get("timeout", 10)
+            return self._wait_for_text(target, timeout)
 
         return ToolResult(
             success=False,
@@ -291,4 +297,52 @@ class ScreenTool(JarvisTool):
                 "width": width,
                 "height": height,
             },
+        )
+        
+        
+    def _wait_for_text(
+    self,
+    target: str,
+    timeout: float = 10,
+) -> ToolResult:
+        """Wait until visible text appears on the screen."""
+
+        target = target.strip()
+
+        if not target:
+            return ToolResult(
+                success=False,
+                message="No text was provided to wait for.",
+            )
+
+        try:
+            timeout = float(timeout)
+        except (TypeError, ValueError):
+            return ToolResult(
+                success=False,
+                message="Timeout must be a number.",
+            )
+
+        start = time.time()
+
+        while time.time() - start < timeout:
+            result = self._locate_text(target)
+
+            if result.success:
+                return ToolResult(
+                    success=True,
+                    message=(
+                        f"'{target}' appeared on the screen."
+                    ),
+                    data=result.data,
+                )
+
+            time.sleep(0.25)
+
+        return ToolResult(
+            success=False,
+            message=(
+                f"Timed out after {timeout:g} seconds "
+                f"waiting for '{target}'."
+            ),
         )
