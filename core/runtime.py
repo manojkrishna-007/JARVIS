@@ -62,6 +62,52 @@ class JarvisRuntime:
 
         command_lower = command.lower()
         
+        if command_lower.startswith("locate "):
+            target = command[7:].strip()
+
+            if not target:
+                return "Please tell me what text you want me to locate."
+
+            result = self.tools.execute(
+                "screen",
+                action="locate",
+                target=target,
+            )
+
+            return result.message
+        
+        if command_lower.startswith("click "):
+            target = command[6:].strip()
+
+            if not target:
+                return "Please tell me what you want me to click."
+
+            locate_result = self.tools.execute(
+                "screen",
+                action="locate",
+                target=target,
+            )
+
+            if not locate_result.success:
+                return locate_result.message
+
+            x = locate_result.data["x"]
+            y = locate_result.data["y"]
+
+            click_result = self.tools.execute(
+                "input",
+                action="click",
+                x=x,
+                y=y,
+            )
+
+            if not click_result.success:
+                return click_result.message
+
+            return (
+                f"Clicked '{target}' at ({x}, {y})."
+            )
+                
         if command_lower == "automation test":
             launch_result = self.automation.launch_and_focus(
                 application="notepad",
