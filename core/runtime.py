@@ -79,93 +79,44 @@ class JarvisRuntime:
         if command_lower.startswith("click "):
             target = command[6:].strip()
 
-            if not target:
-                return "Please tell me what you want me to click."
-
-            locate_result = self.tools.execute(
-                "screen",
-                action="locate",
+            return self._visual_action(
                 target=target,
-            )
-
-            if not locate_result.success:
-                return locate_result.message
-
-            x = locate_result.data["x"]
-            y = locate_result.data["y"]
-
-            click_result = self.tools.execute(
-                "input",
                 action="click",
-                x=x,
-                y=y,
+                failure_message=(
+                    "Please tell me what you want me to click."
+                ),
+                success_message=(
+                    "Clicked '{target}' at ({x}, {y})."
+                ),
             )
-
-            if not click_result.success:
-                return click_result.message
-
-            return f"Clicked '{target}' at ({x}, {y})."
 
         if command_lower.startswith("double click "):
             target = command[13:].strip()
 
-            if not target:
-                return "Please tell me what you want me to double-click."
-
-            locate_result = self.tools.execute(
-                "screen",
-                action="locate",
+            return self._visual_action(
                 target=target,
-            )
-
-            if not locate_result.success:
-                return locate_result.message
-
-            x = locate_result.data["x"]
-            y = locate_result.data["y"]
-
-            click_result = self.tools.execute(
-                "input",
                 action="double_click",
-                x=x,
-                y=y,
+                failure_message=(
+                    "Please tell me what you want me to double-click."
+                ),
+                success_message=(
+                    "Double-clicked '{target}' at ({x}, {y})."
+                ),
             )
-
-            if not click_result.success:
-                return click_result.message
-
-            return f"Double-clicked '{target}' at ({x}, {y})."
 
         if command_lower.startswith("move to "):
             target = command[8:].strip()
 
-            if not target:
-                return "Please tell me where you want me to move."
-
-            locate_result = self.tools.execute(
-                "screen",
-                action="locate",
+            return self._visual_action(
                 target=target,
-            )
-
-            if not locate_result.success:
-                return locate_result.message
-
-            x = locate_result.data["x"]
-            y = locate_result.data["y"]
-
-            move_result = self.tools.execute(
-                "input",
                 action="move",
-                x=x,
-                y=y,
+                failure_message=(
+                    "Please tell me where you want me to move."
+                ),
+                success_message=(
+                    "Moved mouse to '{target}' at ({x}, {y})."
+                ),
             )
-
-            if not move_result.success:
-                return move_result.message
-
-            return f"Moved mouse to '{target}' at ({x}, {y})."
-        
                 
         if command_lower == "automation test":
             launch_result = self.automation.launch_and_focus(
@@ -646,6 +597,48 @@ class JarvisRuntime:
         return (
             f"I received: '{command}'\n"
             "I don't have a tool capable of handling that request yet."
+        )
+
+    def _visual_action(
+        self,
+        target: str,
+        action: str,
+        failure_message: str,
+        success_message: str,
+    ) -> str:
+        """Locate visible text and perform an input action on it."""
+
+        target = target.strip()
+
+        if not target:
+            return failure_message
+
+        locate_result = self.tools.execute(
+            "screen",
+            action="locate",
+            target=target,
+        )
+
+        if not locate_result.success:
+            return locate_result.message
+
+        x = locate_result.data["x"]
+        y = locate_result.data["y"]
+
+        action_result = self.tools.execute(
+            "input",
+            action=action,
+            x=x,
+            y=y,
+        )
+
+        if not action_result.success:
+            return action_result.message
+
+        return success_message.format(
+            target=target,
+            x=x,
+            y=y,
         )
 
     def shutdown(self):
